@@ -16,8 +16,17 @@ from mjlab.envs import mdp as envs_mdp
 from mjlab.envs.mdp.actions import JointPositionActionCfg
 from mjlab.managers import TerminationTermCfg
 from mjlab.managers.event_manager import EventTermCfg
+from mjlab.managers.observation_manager import ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
+
+from .xgb_observations import (
+  base_ang_vel_025,
+  base_lin_vel_2x,
+  joint_vel_005,
+  roll_pitch_zero,
+  velocity_commands_2x,
+)
 from mjlab.sensor import (
   ContactMatch,
   ContactSensorCfg,
@@ -261,6 +270,21 @@ def xgb_rough_env_cfg(
         cfg.scene.terrain.terrain_generator.num_rows = 5
         cfg.scene.terrain.terrain_generator.border_width = 10.0
 
+  # Replace actor observations with the 48-dim qiyuan_mc deployment format.
+  # See xgb_observations.py for the deployment obs layout. Critic keeps the
+  # default privileged terms (height_scan, foot contacts, etc.).
+  cfg.observations["actor"].terms = {
+    "base_lin_vel": ObservationTermCfg(func=base_lin_vel_2x),
+    "base_ang_vel": ObservationTermCfg(func=base_ang_vel_025),
+    "roll_pitch": ObservationTermCfg(func=roll_pitch_zero),
+    "vel_cmd": ObservationTermCfg(func=velocity_commands_2x),
+    "joint_pos": ObservationTermCfg(
+      func=mdp.joint_pos_rel, params={"biased": True}
+    ),
+    "joint_vel": ObservationTermCfg(func=joint_vel_005),
+    "actions": ObservationTermCfg(func=mdp.last_action),
+  }
+
   return cfg
 
 
@@ -289,7 +313,8 @@ def xgb_flat_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   cfg.scene.sensors = tuple(
     s for s in (cfg.scene.sensors or ()) if s.name not in remove_sensors
   )
-  del cfg.observations["actor"].terms["height_scan"]
+  # Actor terms were replaced in rough_env_cfg with the 48-dim qiyuan_mc
+  # format (no height_scan), so only critic needs height_scan removed here.
   del cfg.observations["critic"].terms["height_scan"]
   cfg.rewards["upright"].params.pop("terrain_sensor_names", None)
 
