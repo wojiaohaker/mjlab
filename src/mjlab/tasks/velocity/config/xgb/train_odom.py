@@ -122,6 +122,7 @@ def collect_data(args):
   obs, _ = env.reset()
   all_inputs = []
   all_targets = []
+  n_dropped = 0
 
   asset = env.unwrapped.scene["robot"]
   print(f"[collect] num_envs={args.num_envs} steps={args.collect_steps}")
@@ -139,18 +140,25 @@ def collect_data(args):
     odom_in = build_odom_input(asset.data, args.num_envs)
     gt_vel = asset.data.root_link_lin_vel_b.clone()
 
-    all_inputs.append(odom_in.cpu())
-    all_targets.append(gt_vel.cpu())
+    # Drop NaN/Inf samples (rough terrain can produce unstable envs) and
+    # clip physically implausible velocities to avoid poisoning the regressor.
+    finite = torch.isfinite(odom_in).all(dim=1) & torch.isfinite(gt_vel).all(dim=1)
+    plausible = (gt_vel.abs() < 10.0).all(dim=1)
+    valid = finite & plausible
+    n_dropped += int((~valid).sum().item())
+    if bool(valid.any()):
+      all_inputs.append(odom_in[valid].cpu())
+      all_targets.append(gt_vel[valid].cpu())
 
     if (step + 1) % 200 == 0:
       print(f"  step {step+1}/{args.collect_steps} "
-            f"vel_mean={gt_vel.mean(0).tolist()}")
+            f"vel_mean={gt_vel[finite].mean(0).tolist()} dropped={n_dropped}")
 
   env.close()
 
   inputs = torch.cat(all_inputs, dim=0)   # (N, 29)
   targets = torch.cat(all_targets, dim=0)  # (N, 3)
-  print(f"[collect] total samples: {inputs.shape[0]}")
+  print(f"[collect] total samples: {inputs.shape[0]} (dropped {n_dropped})")
   return inputs, targets
 
 

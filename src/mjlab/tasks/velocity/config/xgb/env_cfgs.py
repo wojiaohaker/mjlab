@@ -52,6 +52,9 @@ def xgb_rough_env_cfg(
   cfg.sim.mujoco.impratio = 10
   cfg.sim.mujoco.cone = "elliptic"
   cfg.sim.contact_sensor_maxmatch = 500
+  cfg.sim.nconmax = None  # Auto-size contact buffer for rough terrain (stairs).
+
+  cfg.scene.num_envs = 2048
 
   cfg.scene.entities = {"robot": get_xgb_robot_cfg()}
 
