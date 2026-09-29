@@ -279,23 +279,36 @@ def tilted_grid(
 
 # Named terrain sets.
 
+# Terrain parameters tuned to match terrain_yard.xml stairs:
+#   step_height = 0.15 m, step_depth (run) = 0.2 m, ~37° slope.
+# step_height_range=(0.05, 0.2) is interpolated by difficulty, so at
+# difficulty 0.67 the step is exactly 0.15 m and the hardest level reaches
+# 0.20 m (above deployment target). step_width=0.2 matches the deployment
+# step depth. Stairs proportion raised to 0.3 each (total 0.6) so the robot
+# sees staircases more often during curriculum training.
 ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(
   size=(8.0, 8.0),
   border_width=20.0,
   num_rows=10,
   num_cols=20,
   sub_terrains={
-    "flat": flat(proportion=0.2),
-    "pyramid_stairs": pyramid_stairs(proportion=0.2, step_height_range=(0.0, 0.1)),
+    "flat": flat(proportion=0.15),
+    "pyramid_stairs": pyramid_stairs(
+      proportion=0.3,
+      step_height_range=(0.05, 0.2),
+      step_width=0.2,
+    ),
     "pyramid_stairs_inv": pyramid_stairs_inv(
-      proportion=0.2, step_height_range=(0.0, 0.1)
+      proportion=0.3,
+      step_height_range=(0.05, 0.2),
+      step_width=0.2,
     ),
     "hf_pyramid_slope": hf_pyramid_slope(proportion=0.1, slope_range=(0.0, 1.0)),
     "hf_pyramid_slope_inv": hf_pyramid_slope_inv(
-      proportion=0.1, slope_range=(0.0, 1.0)
+      proportion=0.05, slope_range=(0.0, 1.0)
     ),
-    "random_rough": random_rough(proportion=0.1),
-    "wave_terrain": wave_terrain(proportion=0.1),
+    "random_rough": random_rough(proportion=0.05),
+    "wave_terrain": wave_terrain(proportion=0.05),
   },
   add_lights=True,
 )
