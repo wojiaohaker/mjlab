@@ -5,7 +5,8 @@ from .env_cfgs import (
   xgb_flat_env_cfg,
   xgb_rough_env_cfg,
 )
-from .rl_cfg import xgb_ppo_runner_cfg
+from .flipover_env_cfgs import xgb_flipover_env_cfg
+from .rl_cfg import xgb_flipover_ppo_runner_cfg, xgb_ppo_runner_cfg
 
 register_mjlab_task(
   task_id="Mjlab-Velocity-Rough-Xgb",
@@ -20,5 +21,13 @@ register_mjlab_task(
   env_cfg=xgb_flat_env_cfg(),
   play_env_cfg=xgb_flat_env_cfg(play=True),
   rl_cfg=xgb_ppo_runner_cfg(),
+  runner_cls=VelocityOnPolicyRunner,
+)
+
+register_mjlab_task(
+  task_id="Mjlab-Flipover-Xgb",
+  env_cfg=xgb_flipover_env_cfg(),
+  play_env_cfg=xgb_flipover_env_cfg(play=True),
+  rl_cfg=xgb_flipover_ppo_runner_cfg(),
   runner_cls=VelocityOnPolicyRunner,
 )
