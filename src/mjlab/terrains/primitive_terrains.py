@@ -230,9 +230,11 @@ class BoxPyramidStairsTerrainCfg(SubTerrainCfg):
       pos=box_pos,
     )
     boxes.append(box)
-    origin = np.array(
-      [terrain_center[0], terrain_center[1], (num_steps + 1) * step_height]
-    )
+    # Spawn at the SOUTH edge of the flat border, at ground level, so the
+    # robot starts at the BOTTOM of the staircase and must climb UP toward the
+    # center platform. This gives the policy direct climbing experience
+    # instead of only descending from the top.
+    origin = np.array([terrain_center[0], self.border_width, 0.0])
     box_colors.append(rgba)
 
     geometries = [

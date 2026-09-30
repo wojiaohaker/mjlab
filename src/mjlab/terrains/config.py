@@ -280,35 +280,43 @@ def tilted_grid(
 # Named terrain sets.
 
 # Terrain parameters tuned to match terrain_yard.xml stairs:
-#   step_height = 0.15 m, step_depth (run) = 0.2 m, ~37° slope.
+#   step_height = 0.15 m, step_depth (run) = 0.2 m, ~37 deg slope.
 # step_height_range=(0.05, 0.2) is interpolated by difficulty, so at
 # difficulty 0.67 the step is exactly 0.15 m and the hardest level reaches
 # 0.20 m (above deployment target). step_width=0.2 matches the deployment
-# step depth. Stairs proportion raised to 0.3 each (total 0.6) so the robot
-# sees staircases more often during curriculum training.
+# step depth.
+#
+# Stairs are spawned at the BOTTOM edge (see BoxPyramidStairsTerrainCfg) so the
+# policy must climb UP instead of only descending. border_width=1.0 gives a
+# flat approach zone for a running start. step_height starts at 0.02 m (easy
+# 2 cm steps) so the policy can learn the climbing motion from scratch and
+# ramp up to 0.20 m (above the 0.15 m deployment target). Proportion 0.35 each
+# (total 0.7) so the robot sees staircases frequently during curriculum.
 ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(
   size=(8.0, 8.0),
   border_width=20.0,
   num_rows=10,
   num_cols=20,
   sub_terrains={
-    "flat": flat(proportion=0.15),
+    "flat": flat(proportion=0.12),
     "pyramid_stairs": pyramid_stairs(
-      proportion=0.3,
-      step_height_range=(0.05, 0.2),
+      proportion=0.35,
+      step_height_range=(0.02, 0.2),
       step_width=0.2,
+      border_width=1.0,
     ),
     "pyramid_stairs_inv": pyramid_stairs_inv(
-      proportion=0.3,
-      step_height_range=(0.05, 0.2),
+      proportion=0.35,
+      step_height_range=(0.02, 0.2),
       step_width=0.2,
+      border_width=1.0,
     ),
-    "hf_pyramid_slope": hf_pyramid_slope(proportion=0.1, slope_range=(0.0, 1.0)),
+    "hf_pyramid_slope": hf_pyramid_slope(proportion=0.06, slope_range=(0.0, 1.0)),
     "hf_pyramid_slope_inv": hf_pyramid_slope_inv(
-      proportion=0.05, slope_range=(0.0, 1.0)
+      proportion=0.04, slope_range=(0.0, 1.0)
     ),
-    "random_rough": random_rough(proportion=0.05),
-    "wave_terrain": wave_terrain(proportion=0.05),
+    "random_rough": random_rough(proportion=0.04),
+    "wave_terrain": wave_terrain(proportion=0.04),
   },
   add_lights=True,
 )

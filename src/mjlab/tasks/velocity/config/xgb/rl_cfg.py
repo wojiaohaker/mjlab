@@ -42,7 +42,7 @@ def xgb_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
     experiment_name="xgb_velocity",
     save_interval=50,
     num_steps_per_env=24,
-    max_iterations=10_000,
+    max_iterations=5_000,
   )
 
 
